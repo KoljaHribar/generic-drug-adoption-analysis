@@ -10,7 +10,10 @@ def load_ob_products(path="data/products.txt"):
     product_df = product_df.rename(columns={"Trade_Name":"Drug"})
     product_df = product_df.drop_duplicates(subset=["Drug"])
 
-    # get the following columns: Drug, Ingredient, Appl_Type, Appl_No, Approval_Date
+    # convert approval date column into date data form
+    product_df["Approval_Date"] = pd.to_datetime(product_df["Approval_Date"], errors="coerce")
+
+    # get the following columns: Drug, Ingredient, Appl_Type, Appl_No, Approval_Date, Dosage_Form, Route
     final_df = product_df[["Drug", "Ingredient", "Appl_Type", "Appl_No", "Approval_Date"]]
 
     return final_df

@@ -10,11 +10,14 @@ def load_ob_products(path="data/products.txt"):
     product_df["Dosage_Form"] = product_df["Dosage_Form"].str.strip()
     product_df["Route"] = product_df["Route"].str.strip()
 
-    #normalizing the RLD for the backtest, rld is unique for every entry in the product dataset
+    # normalizing the RLD for the backtest, rld is unique for every entry in the product dataset
     product_df["RLD"] = product_df["RLD"].str.strip().str.upper()
 
+    # for joining with the spenidng cms data
+    product_df = product_df.rename(columns={"Trade_Name":"Drug"})
+
     # get the following columns: Drug, Ingredient, Appl_Type, Appl_No, Approval_Date, Dosage_Form, Route
-    final_df = product_df[["Ingredient", "Appl_Type", "Appl_No", "Approval_Date", "Dosage_Form", "Route", "RLD"]]
+    final_df = product_df[["Drug", "Ingredient", "Appl_Type", "Appl_No", "Approval_Date", "Dosage_Form", "Route", "RLD"]]
 
     return final_df
 
@@ -68,7 +71,7 @@ def patent_expiry():
     ob_df = ob_df[(ob_df["Appl_Type"] == "N") & (ob_df["RLD"] == "YES")]
 
     # get the useful columns
-    ob_df = ob_df[["Ingredient", "Appl_No", "Patent_Expiry", "Dosage_Form", "Route", "Approval_Date"]]
+    ob_df = ob_df[["Drug", "Ingredient", "Appl_No", "Patent_Expiry", "Dosage_Form", "Route", "Approval_Date"]]
 
     # only take the latest NDA that was approved
     ob_df["Approval_Date"] = pd.to_datetime(ob_df["Approval_Date"], errors="coerce")
@@ -88,8 +91,11 @@ def patent_generic_join():
     # rename the approval date to better suit consumer
     backtest_df = backtest_df.rename(columns={"Approval_Date_ANDA":"Generic_Launch"})
 
+    # to match with the cms spending data
+    backtest_df["Drug"] = backtest_df["Drug"].str.lower().str.strip()
+
     # get the useful columns
-    backtest_df = backtest_df[["Ingredient", "Generic_Launch", "Patent_Expiry"]]
+    backtest_df = backtest_df[["Drug", "Ingredient", "Generic_Launch", "Patent_Expiry"]]
 
     # filter out generic approval data to be after 2000 (modern data)
     backtest_df = backtest_df[backtest_df["Generic_Launch"] >= '2000-01-01']
@@ -99,7 +105,7 @@ def patent_generic_join():
     
     return backtest_df
 
-    # print(backtest_df.head(20))
+    #print(backtest_df.head(20))
     # print(backtest_df["delta_years"].describe())
 
 #patent_generic_join()
